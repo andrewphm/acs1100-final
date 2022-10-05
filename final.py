@@ -67,10 +67,43 @@ def prompt_user(message):
     return user_response
 
 
+def save_user_data(users, file_name):
+    """
+    Takes in updated user data and updates the file.
+    Parameters: updated users (list), and file name (string)
+    """
+    new_data = []
+    for user in users:
+        username = user["username"]
+        password = user["password"]
+        balance = user["balance"]
+        full_name = user["full_name"]
+        user_str = f"{username},{password},{full_name},{balance}\n"
+        new_data.append(user_str)
+
+    with open(file_name, "w") as outfile:
+        outfile.writelines(new_data)
+
+
+def deposit(username, amount, users):
+    """
+    Takes in username and deposit amount and updates user balance.
+    Parameters: username (string), amount (float), and users (list).
+    Returns: new balance (string).
+    """
+    for user in users:
+        if user["username"] == username:
+            balance = float(user["balance"])
+            balance += amount
+            user["balance"] = str(balance)
+            return user["balance"]
+
+
 def online_bank():
     """
     Function that prompts user for username and password and
     if they match it will display information about the user.
+    Also asks if the user would like to make a deposit and updates the data.txt file.
     """
     users = load_user_data("data.txt")
 
@@ -89,6 +122,22 @@ def online_bank():
             )
             if try_again == "n":
                 break
+
+    # Deposit
+    while True:
+        deposit_funds = prompt_user(
+            f"{bcolors.HEADER}Would you like to deposit funds? {bcolors.WARNING}(y/n): {bcolors.ENDC}"
+        )
+        if deposit_funds == "y":
+            amount = float(
+                prompt_user(f"{bcolors.HEADER}How much would you like to deposit? ")
+            )
+            new_balance = deposit(user["username"], amount, users)
+            print(f"{bcolors.OKBLUE}Success. Your new balance is ${new_balance}.")
+            save_user_data(users, "data.txt")
+            break
+        else:
+            break
 
 
 online_bank()
